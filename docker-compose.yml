@@ -1,0 +1,35 @@
+version: "3"
+
+volumes:
+  postgres:
+    driver: local
+
+services:
+    postgres:
+      image: postgres:11.1
+      environment:
+        - POSTGRES_NAME=postgres
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=mysecretpassword
+        - PGDATA=pgdata
+      volumes:
+        - postgres:/var/lib/postgresql/data/pgdata
+      ports:
+        - "8000:5432"
+    minimal_django:
+      build:
+        context: .
+      ports:
+        - "4001:4001"
+      volumes:
+        - .:/srv/minimal-django
+      depends_on:
+        - postgres
+    website:
+      image: php:apache
+      volumes:
+        - ./website:/var/www/html
+      ports:
+        - 5000:80
+      depends_on:
+        - minimal_django
